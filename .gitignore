@@ -1,0 +1,11 @@
+# Participant package: no redistribution, exact-site publication, or retention after event.
+/Incubation material/
+/challenge3/private/
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.DS_Store
+*.tif
+*.npy
+

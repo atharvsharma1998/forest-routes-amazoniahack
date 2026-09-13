@@ -1,0 +1,57 @@
+{
+  "id": "gpx-3bc11c44a04dbd7c",
+  "sha256": "3bc11c44a04dbd7cdc47fe21d25e131ba5d31f5aef2da9e0dd5afa4405b44ff0",
+  "synthetic": true,
+  "status": "accepted",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "times": [
+          "2026-09-01T12:00:00Z",
+          "2026-09-01T12:01:00Z",
+          "2026-09-01T12:02:00Z"
+        ],
+        "hdop": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.035932611621,
+            0.0
+          ],
+          [
+            0.039076715138,
+            0.0
+          ],
+          [
+            0.042220818654,
+            0.0
+          ]
+        ]
+      }
+    }
+  ],
+  "history": [
+    {
+      "event": "imported",
+      "at": "2026-09-13T13:39:50.203250+00:00"
+    },
+    {
+      "event": "review",
+      "decision": "accepted",
+      "reviewer": "Simulated reviewer",
+      "note": "Synthetic known connection accepted for demonstration only; not real field evidence",
+      "at": "2026-09-13T13:39:50.203304+00:00"
+    }
+  ],
+  "limitations": [
+    "One traversal is not year-round passability or permission to access land.",
+    "Coordinates stay local; no automatic shared-map publication."
+  ]
+}

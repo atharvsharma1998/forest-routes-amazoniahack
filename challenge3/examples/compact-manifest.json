@@ -1,0 +1,9 @@
+{
+  "bytes": 2013,
+  "nodes": 9,
+  "edges": 8,
+  "sha256": "deb03932d8b04f6af367cd55e3d2054c50efbbb94673f76614d0914f629bce77",
+  "geometry_quantization_m": 0.01,
+  "edge_lengths": "original float64 metres",
+  "purpose": "Offline browser route computation; no server, runtime API, or precomputed routes required."
+}

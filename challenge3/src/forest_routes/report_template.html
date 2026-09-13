@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forest Routes · Field officer review</title>
+<style>
+:root{
+  --paper:#ebe6dc; --sheet:#f7f3ea; --ink:#1a211c; --muted:#5c675f; --rule:#c5beb2;
+  --forest:#25553a; --route:#1f6b4c; --walk:#b85a28; --gap:#9b2f2f; --map:#d7e0d6; --warn:#8a2f24;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;color:var(--ink);
+  background:
+    radial-gradient(900px 420px at 90% 0%, #d9e4d4 0%, transparent 50%),
+    linear-gradient(160deg,#e8e2d5,#ebe6dc 45%,#e3ddd1);
+  font:14px/1.5 Georgia,"Iowan Old Style",Palatino,"Times New Roman",serif;
+}
+header{
+  display:flex;justify-content:space-between;gap:20px;align-items:end;
+  padding:22px 28px 16px;border-bottom:1px solid var(--rule);
+  background:color-mix(in srgb,var(--sheet) 90%, transparent);
+}
+.brand{font:700 12px/1 ui-monospace,"Cascadia Mono",Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--forest)}
+h1{margin:8px 0 0;font-size:clamp(28px,3.6vw,38px);letter-spacing:-.03em;line-height:1.05}
+header p{margin:6px 0 0;color:var(--muted)}
+.badge{font:12px/1.3 ui-monospace,Menlo,monospace;color:var(--walk);border:1px solid #d2b39a;padding:8px 10px;background:var(--sheet);white-space:nowrap}
+.notice{padding:10px 28px;border-bottom:1px solid var(--rule);background:#efe8d8;color:#4d564f;font:13px/1.45 ui-monospace,Menlo,monospace}
+main{padding:22px 28px 36px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{background:var(--sheet);border:1px solid var(--rule);padding:14px 16px}
+.stat strong{display:block;font:700 26px/1.1 ui-monospace,Menlo,monospace;color:var(--forest)}
+.stat span{font:11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.workspace{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
+.sheet{background:var(--sheet);border:1px solid var(--rule)}
+.list{max-height:640px;overflow:auto}
+.journey{
+  display:block;width:100%;text-align:left;background:transparent;color:inherit;
+  border:0;border-bottom:1px solid var(--rule);padding:12px 14px;cursor:pointer;font:inherit;
+}
+.journey:hover,.journey.active{background:#e7efe4}
+.journey b{font-weight:700}
+.journey small{display:block;color:var(--muted);font:12px/1.35 ui-monospace,Menlo,monospace;margin-top:3px}
+.status{float:right;font:11px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;color:var(--walk)}
+.mapbox{position:relative;background:var(--map);min-height:500px;overflow:hidden}
+canvas{width:100%;height:500px;display:block;touch-action:none;cursor:grab}
+.toolbar{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:2}
+button.control{
+  background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:2px;
+  padding:7px 10px;cursor:pointer;font:12px/1 ui-monospace,Menlo,monospace;
+}
+.maplabel{
+  position:absolute;bottom:12px;left:12px;z-index:2;
+  background:color-mix(in srgb,var(--sheet) 92%,transparent);border:1px solid var(--rule);
+  padding:7px 9px;font:11px/1.3 ui-monospace,Menlo,monospace;color:var(--muted);
+}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:10px 14px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font:12px/1 ui-monospace,Menlo,monospace;color:var(--muted)}
+.dot{display:inline-block;width:16px;height:3px;vertical-align:middle;margin-right:5px}
+.detail{padding:14px 16px;min-height:110px}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.detail-grid strong{display:block;font:700 18px/1.1 ui-monospace,Menlo,monospace}
+.detail-grid span{font:11px/1.3 ui-monospace,Menlo,monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.selected-title{font-size:18px;font-weight:700;margin-bottom:10px}
+.bottom{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;margin-top:16px}
+.bottom .sheet{padding:18px;overflow:auto}
+h2{font-size:18px;margin:0 0 10px}
+p{margin:6px 0;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:12px/1.35 ui-monospace,Menlo,monospace}
+th,td{padding:8px;text-align:right;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+.highlight{background:#e4eee3;color:var(--forest)}
+ul{padding-left:18px;color:var(--muted)}li{margin:6px 0}
+.full{grid-column:1/-1}
+.footer{padding:14px 28px 28px;color:var(--muted);font:12px/1.45 ui-monospace,Menlo,monospace;border-top:1px solid var(--rule);margin-top:8px}
+@media(max-width:900px){
+  header{flex-direction:column;align-items:start}
+  main{padding:16px}.stats{grid-template-columns:1fr 1fr}
+  .workspace,.bottom{grid-template-columns:1fr}
+  .list{max-height:240px}.detail-grid{grid-template-columns:1fr 1fr}
+}
+button:focus-visible,:focus-visible{outline:2px solid var(--walk);outline-offset:2px}
+</style>
+<header>
+  <div>
+    <div class="brand">AmazôniaHack · Challenge 3 · Field officer</div>
+    <h1>Field officer review</h1>
+    <p>Journeys, proposed gaps, and screening notes · Paragominas</p>
+  </div>
+  <div class="badge">Private · do not publish</div>
+</header>
+<div class="notice">Geometric candidates require review. Walking legs are straight-line lower bounds. Bridges, condition and access remain unverified.</div>
+<main>
+  <section class="stats" id="stats"></section>
+  <section class="workspace">
+    <aside class="sheet list" id="journeys" aria-label="Choose a test journey"></aside>
+    <div class="sheet">
+      <div class="mapbox">
+        <canvas id="map" aria-label="Local road geometry and selected candidate route"></canvas>
+        <div class="toolbar">
+          <button class="control" id="fit" type="button">Fit journey</button>
+          <button class="control" id="all" type="button">Municipality</button>
+          <button class="control" id="osm" type="button">OSM on</button>
+          <button class="control" id="previsia" type="button">PrevisIA on</button>
+          <button class="control" id="sat" type="button">Satellite off</button>
+        </div>
+        <div class="maplabel">Scroll to zoom · drag to pan · Satellite = local Sentinel-2 (downsampled)</div>
+      </div>
+      <div class="legend">
+        <span><i class="dot" style="background:#3f6b4a"></i>OSM</span>
+        <span><i class="dot" style="background:#5a7078"></i>PrevisIA</span>
+        <span><i class="dot" style="background:#1f6b4c"></i>Candidate route</span>
+        <span><i class="dot" style="background:#9b2f2f"></i>Proposed gap</span>
+        <span><i class="dot" style="background:#b85a28"></i>Walking lower bound</span>
+        <span><i class="dot" style="background:#6b7c5a"></i>Sentinel-2</span>
+      </div>
+      <div class="detail" id="detail"></div>
+    </div>
+  </section>
+  <section class="bottom">
+    <div class="sheet">
+      <h2>Connectivity vs walking allowance</h2>
+      <p>Candidate pairs out of 16. Both ends must fall within the listed walking limit.</p>
+      <table id="sensitivity"></table>
+      <p>Method-specific counts. Not field-verified reachability.</p>
+    </div>
+    <div class="sheet">
+      <h2>What the evidence supports</h2>
+      <ul>
+        <li>Exact source geometry, planar noding and proposed gap distances are evaluated separately.</li>
+        <li>Every gap keeps its physical length and an ID for review or rejection.</li>
+        <li>Input-road support measures geometry only — not bridges or legal access.</li>
+        <li>Planar intersections assume at-grade junctions; bridge tags are absent.</li>
+        <li>PrevisIA acquisition date is unknown.</li>
+        <li>Desktop runtime only; Android routing is unverified.</li>
+      </ul>
+      <p id="runtime"></p>
+    </div>
+    <div class="sheet full">
+      <h2>Highest-impact gap reviews</h2>
+      <p>Check proposed gaps on dated imagery, then the full corridor and both access legs.</p>
+      <table id="gaps"></table>
+    </div>
+  </section>
+</main>
+<div class="footer">Self-contained local file: no API, tiles, telemetry or CDN. OSM (ODbL) + Imazon / PrevisIA participant layers. Delete supplied data and derived maps after the event.</div>
+<script id="data" type="application/json">__PAYLOAD__</script>
+<script>
+'use strict';
+const D=JSON.parse(document.getElementById('data').textContent);
+const $=id=>document.getElementById(id);
+const num=(n,d=0)=>n==null?'—':Number(n).toLocaleString('en-GB',{maximumFractionDigits:d});
+const base=D.summary.summaries.find(s=>s.scenario==='fused_noded_snap150'&&s.walking_allowance_per_end_m===1000);
+let activeImage=null;
+const imageryCache=new Map();
+for(const item of D.imagery){const img=new Image();img.src=item.data_uri;imageryCache.set(item.gap_id,{...item,img})}
+const satCache={municipal:null,journeys:new Map()};
+function bindSat(layer, store){
+  const img=new Image();
+  img.onload=()=>draw();
+  img.src=layer.data_uri;
+  const packed={...layer,img};
+  if(store==='municipal')satCache.municipal=packed;
+  else satCache.journeys.set(layer.id,packed);
+}
+if(D.satellite){
+  if(D.satellite.municipal)bindSat(D.satellite.municipal,'municipal');
+  for(const j of D.satellite.journeys||[])bindSat(j,'journey');
+}
+let selected=D.routes[0].pair_id,center=[0,0],scale=1,showOSM=true,showPrevisia=true,showSat=false;
+const canvas=$('map'),ctx=canvas.getContext('2d');
+let width=800,height=500;
+if(!D.satellite)$('sat').disabled=true;
+$('stats').innerHTML=[['Candidate journeys',base.candidate_pairs+'/16'],['Walking policy','≤ 1 km / end'],['Field-verified','0'],['API charge','$0']].map(([k,v])=>`<div class="stat"><strong>${v}</strong><span>${k}</span></div>`).join('');
+$('journeys').innerHTML=D.routes.map(r=>`<button class="journey" data-id="${r.pair_id}" type="button"><span class="status">${r.candidate_connected?'REVIEW':'NO CANDIDATE'}</span><b>${r.pair_id}</b><small>${r.pair_type.replaceAll('-',' ')} · ${num(r.straight_line_km,1)} km direct</small><small>${r.candidate_connected?num(r.network_distance_km,1)+' km network · '+num(r.final_walk_lower_bound_m)+' m final access':r.reason.replaceAll('_',' ')}</small></button>`).join('');
+const scenarios=[...new Set(D.summary.summaries.map(s=>s.scenario))],walks=[...new Set(D.summary.summaries.map(s=>s.walking_allowance_per_end_m))];
+const names={osm_raw:'OSM · shared vertices',previsia_raw:'PrevisIA · shared vertices',fused_shared_vertices:'Combined · shared vertices',fused_noded:'Combined · planar noding',fused_noded_snap50:'Noded + 50 m gaps',fused_noded_snap150:'Noded + 150 m gaps',fused_noded_snap300:'Noded + 300 m gaps'};
+$('sensitivity').innerHTML='<thead><tr><th>Method</th>'+walks.map(w=>`<th>${num(w)} m</th>`).join('')+'</tr></thead><tbody>'+scenarios.map(s=>`<tr class="${s==='fused_noded_snap150'?'highlight':''}"><td>${names[s]||s}</td>`+walks.map(w=>`<td>${D.summary.summaries.find(x=>x.scenario===s&&x.walking_allowance_per_end_m===w).candidate_pairs}</td>`).join('')+'</tr>').join('')+'</tbody>';
+$('runtime').textContent=`Desktop benchmark: ${num(D.summary.run_seconds,1)} s total; ${num(D.summary.peak_rss_mb_linux)} MB process peak RAM. Hardware, energy, imagery and review are not priced.`;
+const gaps=new Map();
+for(const l of D.lines.filter(l=>l.gap_id)){if(!gaps.has(l.gap_id))gaps.set(l.gap_id,{id:l.gap_id,length:l.length_m,pairs:new Set()});gaps.get(l.gap_id).pairs.add(l.pair_id)}
+$('gaps').innerHTML='<thead><tr><th>Gap ID</th><th>Distance</th><th>Journeys</th><th>Screening</th></tr></thead><tbody>'+[...gaps.values()].sort((a,b)=>b.pairs.size-a.pairs.size||a.length-b.length).slice(0,10).map(g=>`<tr><td><button class="control" data-gap="${g.id}" type="button">${g.id}</button></td><td>${num(g.length,1)} m</td><td>${g.pairs.size}</td><td>${D.reviews.find(r=>r.gap_id===g.id)?.screening_status.replaceAll('_',' ')||'Unreviewed'}</td></tr>`).join('')+'</tbody>';
+function xy(c){return [(c[0]-center[0])*scale+width/2,height/2-(c[1]-center[1])*scale]}
+function fit(points){let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;for(const [x,y]of points){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}center=[(minX+maxX)/2,(minY+maxY)/2];scale=Math.min((width-90)/Math.max(1000,maxX-minX),(height-100)/Math.max(1000,maxY-minY));draw()}
+function fitJourney(){activeImage=null;const site=D.sites.find(p=>p.id===selected);fit([...D.lines.filter(l=>l.pair_id===selected).flatMap(l=>l.coordinates),site.origin,site.destination])}
+function stroke(coords,color,lineWidth,dash=[]){ctx.beginPath();for(let i=0;i<coords.length;i++){const p=xy(coords[i]);i?ctx.lineTo(...p):ctx.moveTo(...p)}ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.setLineDash(dash);ctx.stroke()}
+function drawSat(layer){
+  if(!layer||!layer.img||!layer.img.complete)return;
+  const b=layer.bounds_utm23s,p=xy([b[0],b[3]]);
+  ctx.drawImage(layer.img,p[0],p[1],(b[2]-b[0])*scale,(b[3]-b[1])*scale);
+}
+function draw(){
+  ctx.clearRect(0,0,width,height);ctx.fillStyle='#d7e0d6';ctx.fillRect(0,0,width,height);
+  if(showSat){
+    drawSat(satCache.municipal);
+    drawSat(satCache.journeys.get(selected));
+    // Gap chips for closer inspection when zoomed / reviewing
+    for(const item of imageryCache.values()){
+      if(item.img.complete){
+        const b=item.bounds_utm23s,p=xy([b[0],b[3]]);
+        ctx.globalAlpha=activeImage===item.gap_id?1:0.92;
+        ctx.drawImage(item.img,p[0],p[1],(b[2]-b[0])*scale,(b[3]-b[1])*scale);
+        ctx.globalAlpha=1;
+      }
+    }
+  }else if(activeImage){
+    const item=imageryCache.get(activeImage),b=item.bounds_utm23s,p=xy([b[0],b[3]]);
+    if(item.img.complete)ctx.drawImage(item.img,p[0],p[1],(b[2]-b[0])*scale,(b[3]-b[1])*scale);
+  }
+  const roadAlpha=showSat?0.95:1;
+  ctx.globalAlpha=roadAlpha;
+  for(const r of D.roads){if((r.source==='osm'&&!showOSM)||(r.source==='previsia'&&!showPrevisia))continue;stroke(r.coordinates,r.source==='osm'?(showSat?'#d7f0c8':'#3f6b4a'):(showSat?'#b7d0d8':'#5a7078'),r.source==='osm'?1:.55)}
+  ctx.globalAlpha=1;
+  const ls=D.lines.filter(l=>l.pair_id===selected);
+  for(const l of ls.filter(l=>!l.gap_id&&!l.kind.includes('walk')))stroke(l.coordinates,showSat?'#8dffb0':'#1f6b4c',3.2);
+  for(const l of ls.filter(l=>l.gap_id||l.kind.includes('walk'))){stroke(l.coordinates,l.gap_id?'#ff6b5a':'#ffb070',l.gap_id?3.5:2.8,l.gap_id?[]:[5,4]);if(l.gap_id){const p=xy(l.coordinates[0]);ctx.beginPath();ctx.arc(...p,4,0,Math.PI*2);ctx.fillStyle='#ff6b5a';ctx.fill()}}
+  ctx.setLineDash([]);
+  const site=D.sites.find(s=>s.id===selected);
+  for(const [kind,c,color]of[['Origin',site.origin,'#25553a'],['Destination',site.destination,'#b85a28']]){const p=xy(c);ctx.beginPath();ctx.arc(...p,5.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#f7f3ea';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=showSat?'#f4f7f0':'#1a211c';ctx.font='600 12px ui-monospace,Menlo,monospace';ctx.fillText(kind,p[0]+10,p[1]-8)}
+  const nominal=100/scale,power=10**Math.floor(Math.log10(nominal)),length=Math.max(power,Math.floor(nominal/power)*power);
+  ctx.strokeStyle=showSat?'#f4f7f0':'#1a211c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(width-30-length*scale,height-20);ctx.lineTo(width-30,height-20);ctx.stroke();
+  ctx.fillStyle=showSat?'#f4f7f0':'#1a211c';ctx.font='11px ui-monospace,Menlo,monospace';ctx.fillText(length>=1000?num(length/1000,1)+' km':num(length)+' m',width-30-length*scale,height-28);
+}
+function choose(id){selected=id;document.querySelectorAll('.journey').forEach(b=>b.classList.toggle('active',b.dataset.id===id));const r=D.routes.find(x=>x.pair_id===id);$('detail').innerHTML=`<div class="selected-title">${id} · ${r.candidate_connected?'Candidate requires validation':'No candidate under this policy'}</div>`+(r.candidate_connected?`<div class="detail-grid"><div><strong>${num(r.network_distance_km,1)} km</strong><span>Network incl. gaps</span></div><div><strong>${num(r.initial_walk_lower_bound_m)} / ${num(r.final_walk_lower_bound_m)} m</strong><span>Initial / final walk</span></div><div><strong>${r.gap_count} · ${num(r.proposed_gap_distance_m)} m</strong><span>Gaps / gap distance</span></div><div><strong>${num(r.input_geometry_supported_fraction*100,2)}%</strong><span>On supplied geometry</span></div></div>`:`<p>${r.reason.replaceAll('_',' ')}. Nearest input geometry: ${num(r.nearest_origin_network_m)} m from origin; ${num(r.nearest_destination_network_m)} m from destination.</p>`);fitJourney()}
+$('journeys').addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(b)choose(b.dataset.id)});
+$('fit').onclick=fitJourney;$('all').onclick=()=>{activeImage=null;fit(D.roads.flatMap(r=>r.coordinates))};
+$('osm').onclick=()=>{showOSM=!showOSM;$('osm').textContent='OSM '+(showOSM?'on':'off');draw()};
+$('previsia').onclick=()=>{showPrevisia=!showPrevisia;$('previsia').textContent='PrevisIA '+(showPrevisia?'on':'off');draw()};
+$('sat').onclick=()=>{
+  showSat=!showSat;
+  $('sat').textContent='Satellite '+(showSat?'on':'off');
+  if(showSat&&D.satellite){
+    const j=satCache.journeys.get(selected);
+    const res=j?j.approx_resolution_m:(satCache.municipal&&satCache.municipal.approx_resolution_m);
+    const prev=$('detail').innerHTML;
+    $('detail').innerHTML=prev+`<p class="sat-note">Satellite layer on · Sentinel-2 3 Sep 2026 · overview ~${res||'—'} m/px (native 10 m). Downsampled for offline use — not bridge verification.</p>`;
+  }
+  draw();
+};
+$('gaps').addEventListener('click',e=>{const b=e.target.closest('[data-gap]');if(!b)return;const gap=b.dataset.gap;const line=D.lines.find(l=>l.gap_id===gap);if(!line)return;choose(line.pair_id);activeImage=imageryCache.has(gap)?gap:null;showSat=true;$('sat').textContent='Satellite on';const xs=line.coordinates.map(c=>c[0]),ys=line.coordinates.map(c=>c[1]),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;fit([[cx-350,cy-350],[cx+350,cy+350]]);const note=D.reviews.find(r=>r.gap_id===gap);$('detail').innerHTML='<div class="selected-title">'+gap+' · Visual screening</div><p>'+(note?note.note:'No imagery review recorded.')+'</p><p>Sentinel-2 · native 10 m pixels · no navigation approval.</p>';canvas.scrollIntoView({block:'center',behavior:'smooth'})});
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);drag=[e.clientX,e.clientY,...center]});
+canvas.addEventListener('pointermove',e=>{if(drag){center=[drag[2]-(e.clientX-drag[0])/scale,drag[3]+(e.clientY-drag[1])/scale];draw()}});
+canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);
+canvas.addEventListener('wheel',e=>{e.preventDefault();const b=canvas.getBoundingClientRect(),x=e.clientX-b.left-width/2,y=height/2-(e.clientY-b.top),old=scale;scale=Math.max(.0001,Math.min(8,scale*Math.exp(-e.deltaY*.0012)));center=[center[0]+x/old-x/scale,center[1]+y/old-y/scale];draw()},{passive:false});
+new ResizeObserver(()=>{width=canvas.clientWidth;height=canvas.clientHeight;const dpr=window.devicePixelRatio||1;canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);fitJourney()}).observe(canvas);
+choose(selected);
+</script>
+</html>
