@@ -51,18 +51,15 @@ Bridge state, legal access, seasonality, and trace age remain unknown. Planar cr
 
 ## Links to project materials
 
-Fill these with working URLs before submit:
-
 1. **Source + public docs (safe to share)**  
-   `[LINK to forest-routes-source.zip or GitHub repo without private data]`  
-   Includes: runnable code, `submission.md`, `results.json`, evidence policy IDs.
+   https://github.com/atharvsharma1998/forest-routes-amazoniahack  
+   Includes runnable code under `challenge3/`, `SUBMISSION.md`, `public/dist/submission.md`, `public/dist/results.json`, evidence policy IDs, and `public/dist/forest-routes-source.zip`.
 
 2. **Private offline router (organisers / closed demo only)**  
-   `[LINK or shared drive to offline-router.html — access-controlled]`  
-   Or: deliver on USB / local demo; do not put on a public website.
+   Local only: `challenge3/private/reviewed/offline-router.html` (access-controlled / USB / live demo — **do not publish**).
 
 3. **Private evidence report (optional, same rules)**  
-   `[LINK or local path to report.html]`
+   Local only: `challenge3/private/reviewed/report.html`
 
 4. **Presentation slides (if any)**  
    `[LINK]`
@@ -75,8 +72,8 @@ Fill these with working URLs before submit:
 - Public archive: `challenge3/public/dist/forest-routes-source.zip`
 - Public note: `challenge3/public/dist/submission.md`
 - Public results: `challenge3/public/dist/results.json`
-- Private router: `challenge3/private/reviewed/offline-router.html` (or `challenge3/private/release-validation/results/offline-router.html`)
-- Private report: `challenge3/private/outputs/report.html` / `challenge3/private/reviewed/report.html`
+- Private router: `challenge3/private/reviewed/offline-router.html`
+- Private report: `challenge3/private/reviewed/report.html`
 
 ### Checklist before pressing submit
 
